@@ -183,6 +183,16 @@
   .find:focus-visible{ outline:2px solid var(--blue); outline-offset:2px; }
   .quiet td{ color:var(--mut); }
 
+  .subpick{ font:inherit; font-size:.83rem; font-weight:650; color:var(--ink);
+    background:var(--card); border:1px solid var(--line); border-radius:7px;
+    padding:6px 26px 6px 12px; cursor:pointer; appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),
+      linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+    background-position:calc(100% - 13px) 52%,calc(100% - 8px) 52%;
+    background-size:5px 5px,5px 5px; background-repeat:no-repeat; }
+  .subpick:hover{ border-color:var(--mut); }
+  .subpick:focus-visible{ outline:2px solid var(--blue); outline-offset:2px; }
+
   .en{ font-size:.68rem; font-weight:700; letter-spacing:.04em; color:var(--blue);
        border:1px solid var(--blue); border-radius:4px; padding:0 3px; margin-left:5px;
        opacity:.75; vertical-align:1px; }
@@ -620,6 +630,7 @@ const KOSPI_S = {name:'코스피', col:C.gray, w:1.5, dash:'5 4', axis:'right', 
 const invPack = base => base.map(x=>({...x, pts:[]})).concat({...KOSPI_S, pts:[]});
 let invDetail = false;
 let invSeries = invPack(INV_MAIN);
+let invPick = '';                     // '' = 전체(다 겹쳐 그림) · 이름이면 그 주체 하나만
 
 const pgSeries = [
   {name:'비차익', col:C.blue,   get:r=>r[pCol('비차익순')]},
@@ -641,11 +652,22 @@ let mode = 20;
 const MODES = [['일별',0], ['5일 누계',5], ['20일 누계',20], ['누적',-1]];
 let invLegPaint = null;
 function paintFlowTabs(){
+  // 주체 하나만 골라 보는 콤보박스. 여러 선을 겹쳐 놓으면 값이 큰 쪽(대개 외국인)이
+  // 축을 다 차지해서 나머지가 바닥에 눌린다 — 하나만 고르면 그 하나에 맞춰 축이
+  // 다시 잡히니 진폭이 작은 주체의 장기 흐름도 보인다. 목록은 지금 펼쳐진 집합
+  // (개인·외국인·기관 또는 그 여섯 갈래)을 그대로 따라간다.
+  const subjects = invSeries.filter(s=>!s.kospi).map(s=>s.name);
+  if(invPick && !subjects.includes(invPick)) invPick = '';   // 펼치기 전환으로 없어진 이름
   document.getElementById('fMode').innerHTML =
     MODES.map(([lb,v])=>`<button type="button" data-m="${v}" aria-pressed="${v===mode}">${lb}</button>`).join('')+
     `<span style="width:18px"></span>`+
     `<button type="button" data-w="0" aria-pressed="${!invDetail}">개인·외국인·기관</button>`+
-    `<button type="button" data-w="1" aria-pressed="${invDetail}">기관 펼쳐서</button>`;
+    `<button type="button" data-w="1" aria-pressed="${invDetail}">기관 펼쳐서</button>`+
+    `<span style="width:18px"></span>`+
+    `<select id="invPick" class="subpick" aria-label="주체 하나만 보기">`+
+    `<option value=""${invPick?'':' selected'}>주체: 전체</option>`+
+    subjects.map(n=>`<option value="${esc(n)}"${n===invPick?' selected':''}>${esc(n)}만</option>`).join('')+
+    `</select>`;
 }
 document.getElementById('fMode').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
@@ -658,6 +680,13 @@ document.getElementById('fMode').addEventListener('click',e=>{
     if(invLegPaint) invLegPaint();
   }
   paintFlowTabs(); drawFlows(fRange());
+});
+// change는 버블링을 타므로 paintFlowTabs()가 매번 통째로 다시 그려도(＝<select>가
+// 새 엘리먼트로 바뀌어도) 부모(#fMode)에 한 번만 걸어 둔 이 리스너는 계속 붙어 있다.
+document.getElementById('fMode').addEventListener('change',e=>{
+  if(e.target.id!=='invPick') return;
+  invPick = e.target.value;
+  drawFlows(fRange());
 });
 
 function fill(series, days, table){
@@ -685,6 +714,10 @@ function drawFlows(daysBack){
      있는 날만 골라 그리면 가로축이 어긋나 같은 자리가 서로 다른 날을 가리킨다. */
   const ks = invSeries.find(s=>s.kospi);
   if(ks) ks.pts = id.map(d=>(D.kospi&&D.kospi[d]!=null)?D.kospi[d]:null);
+  // 콤보박스로 주체 하나를 골랐으면 나머지를 끈다 — 축이 그 하나에 맞춰 다시
+  // 잡힌다. 켜고 끄는 것은 legend()가 읽는 바로 그 off 플래그라, 범례로 다시
+  // 손대도 자연스럽게 이어진다. 코스피는 주체가 아니라 배경 참조선이라 손대지 않는다.
+  invSeries.forEach(s=>{ if(!s.kospi) s.off = invPick ? s.name!==invPick : false; });
   const again = ()=>drawFlows(fRange());
   drawLine({box:'invBox',tip:'invTip',at:'invAt',days:id,series:invSeries,h:360,zero:true,
             zoomKey:'flows', r:96, ytick:v=>억(v/1e4)+'조', fmt:v=>억(v)+'억',
