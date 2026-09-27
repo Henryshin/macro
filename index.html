@@ -849,9 +849,13 @@ document.getElementById('foot').innerHTML =
 /* ── 다시 받기 ──
    이 페이지도 자립형이라 안에 박힌 값을 스스로 못 바꾼다. 자산 대시보드와 같은
    refresh_server.py를 두드려 update.bat을 돌리고, 끝나면 페이지를 다시 읽는다.
-   서버가 없으면 켜는 법만 알려 준다 — 서버 없이도 이 장은 그대로 열린다. */
+   서버가 없으면 이 PC에서 무엇을 실행하면 되는지 알려 준다 — 서버 없이도
+   이 장은 그대로 열린다. */
 (function(){
   const API = 'http://127.0.0.1:8765';
+  /* 이 PC의 실제 경로. make_index.py가 {"root": "C:\\side_PJT\\asset-dashboard", "update": "C:\\side_PJT\\asset-dashboard\\update.bat"} 자리에 박는다 — 페이지에
+     경로를 하드코딩하면 폴더를 옮기는 순간 틀린 안내를 하게 된다. */
+  const LOCAL = {"root": "C:\\side_PJT\\asset-dashboard", "update": "C:\\side_PJT\\asset-dashboard\\update.bat"};
   const btn = document.getElementById('refresh'), at = document.getElementById('refreshat');
   if(!btn || !at) return;                  /* 밖으로 내보낸 사본에는 이 버튼이 없다 */
   at.textContent = `${D.fetched} 수집`;
@@ -888,7 +892,7 @@ document.getElementById('foot').innerHTML =
       btn.disabled = false; btn.textContent = '다시 받기';
       at.classList.add('err');
       at.textContent = (e instanceof TypeError)
-        ? '새로고침 서버가 꺼져 있음 — refresh-server.bat을 실행한 뒤 다시 누르세요'
+        ? `자동 갱신을 끄고 씁니다 — ${LOCAL.update} 를 실행한 뒤 이 페이지를 새로 읽으세요`
         : e.message;
       setTimeout(()=>{ at.classList.remove('err'); at.textContent = before; }, 12000);
     }
