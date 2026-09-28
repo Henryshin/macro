@@ -141,6 +141,17 @@
   .tblwrap{ overflow-x:auto; }
   #seccontrib th, #seccontrib td{ white-space:nowrap; padding-left:6px; padding-right:6px; }
   #seccontrib th:first-child, #seccontrib td:first-child{ padding-left:10px; }
+  
+  #journal tr.fold{ cursor:pointer; }
+  #journal tr.fold:hover{ background:var(--grid); }
+  #journal tr.fold .caret{ display:inline-block; width:10px; color:var(--mut); font-size:.8em; }
+  #journal tr.sub td{ color:var(--mut); font-size:.95em; background:color-mix(in srgb, var(--grid) 45%, transparent); }
+  #journal tr.sub td:first-child{ font-weight:400; padding-left:24px; }
+  #journal .badge{ display:inline-block; min-width:15px; margin-left:5px; padding:0 5px;
+    background:var(--grid); color:var(--mut); border-radius:8px;
+    font-size:.7rem; font-weight:700; line-height:15px; text-align:center;
+    font-variant-numeric:tabular-nums; }
+
   th.sortable{ cursor:pointer; user-select:none; }
   th.sortable:hover{ color:var(--ink2); }
   th.sortable.active{ color:var(--ink); }
