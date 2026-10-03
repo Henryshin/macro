@@ -142,6 +142,11 @@
   #seccontrib th, #seccontrib td{ white-space:nowrap; padding-left:6px; padding-right:6px; }
   #seccontrib th:first-child, #seccontrib td:first-child{ padding-left:10px; }
   
+  .hbar .mom{ font-size:.68rem; font-weight:700; letter-spacing:.02em; }
+
+  body.hideamt .amt{ filter:blur(5.5px); user-select:none; cursor:default; }
+  #amtbtn[aria-pressed="true"]{ background:var(--ink); color:var(--page); border-color:var(--ink); }
+
   #journal tr.fold{ cursor:pointer; }
   #journal tr.fold:hover{ background:var(--grid); }
   #journal tr.fold .caret{ display:inline-block; width:10px; color:var(--mut); font-size:.8em; }
